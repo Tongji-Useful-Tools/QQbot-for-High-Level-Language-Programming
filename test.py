@@ -40,15 +40,15 @@ def post_date():
             if group_id == 942829871:
                 message_list.append(message)    # 存储消息
                 print(message_list)
-                # 5% 概率触发消息回复
-                k = randint(0,20)
+                # 1% 概率触发消息回复
+                k = randint(0,100-1)
                 print(k, len(message_list))
-                if k == 0 and len(message_list) >= 20:
+                if k == 0 and len(message_list) >= 50:
                     response = client.chat.completions.create(
                         model="deepseek-chat",
                         messages=[
                             {"role": "system", "content": system_content},
-                            {"role": "user", "content": "\n".join([f"({idx}): {_}" for idx, _ in enumerate(message_list[-20:])])},
+                            {"role": "user", "content": "\n".join([f"({idx}): {_}" for idx, _ in enumerate(message_list[-50:])])},
                         ],
                         stream=False
                     )
