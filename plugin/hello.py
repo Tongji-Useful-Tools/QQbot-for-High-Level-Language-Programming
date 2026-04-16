@@ -1,0 +1,66 @@
+from flask import Flask, request
+import requests
+import json
+from openai import OpenAI
+import os
+from random import *
+import configparser
+import json
+import time
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+ask_groups = json.loads(config.get('group-zone', 'ask'))
+answer_groups = json.loads(config.get('group-zone', 'answer'))
+total_groups = json.loads(config.get('group-zone', 'total'))
+
+bot_ip = config.get('bot', 'ip')
+http_service_port = config.get('bot', 'http_service_port')
+
+api_key = os.environ.get('DEEPSEEK_API_KEY')
+
+client = OpenAI(
+    api_key=os.environ.get('DEEPSEEK_API_KEY'),
+    base_url="https://api.deepseek.com")
+
+system_content = """
+你是一个可爱的聊天助手，你的主人名叫余梦，昵称为大鲸鱼。
+
+现在，你在一个名为水族馆的群聊，作为这个群聊的bot机器人，你需要模仿他们的语气进行闲聊，每次轮到你发言时，我会给你提供他们最近的20条消息的内容，请你推测他们正在闲聊的话题，并进行回复。
+
+回复内容尽可能有鲸鱼的口吻，尽量简短，不超过50字。
+"""
+
+def morning(user_id, group_id):
+    formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    print(f"插件触发时间: {formatted_time}")
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=[
+            {"role": "system", "content": system_content},
+            {"role": "user", "content": f"用户于 {formatted_time} 起床，请你参考用户的起床时间。回复它的内容：早安"},
+        ],
+        stream=False
+    )
+    reply_content = response.choices[0].message.content
+    print(reply_content)
+    url = f"http://{bot_ip}:{http_service_port}/send_group_msg"
+    payload = {
+        "group_id": group_id,
+        "message": [
+            {  
+                "type": "at",
+                "data": {
+                    "qq": user_id,
+                }
+            },
+            {
+                "type": "text",
+                "data": {
+                    "text": " "+reply_content
+                }
+            }
+        ]
+    }
+    requests.post(url=url, json=payload)

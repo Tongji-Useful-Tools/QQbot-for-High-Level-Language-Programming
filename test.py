@@ -6,6 +6,7 @@ import os
 from random import *
 import configparser
 import json
+import plugin.hello
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -13,6 +14,7 @@ config.read('config.ini')
 ask_groups = json.loads(config.get('group-zone', 'ask'))
 answer_groups = json.loads(config.get('group-zone', 'answer'))
 total_groups = json.loads(config.get('group-zone', 'total'))
+chat_groups = json.loads(config.get('group-zone', 'chat'))
 
 api_key = os.environ.get('DEEPSEEK_API_KEY')
 
@@ -46,6 +48,7 @@ def post_date():
         if message_type == "group":
             message = data.get("message")
             group_id = data.get("group_id")
+            user_id = data.get("user_id")
             if group_id in ask_groups:
                 no_space_message = message.replace(" ", "")
                 if "#Q#" in no_space_message:
@@ -74,36 +77,40 @@ def post_date():
                         ]
                     }
                     requests.post(url=url, json=payload)
-            if group_id == 942829871:
-                message_list.append(message)    # 存储消息
-                print(message_list)
-                # 1% 概率触发消息回复
-                k = randint(0,100-1)
-                print(k, len(message_list))
-                if k == 0 and len(message_list) >= 50:
-                    response = client.chat.completions.create(
-                        model="deepseek-chat",
-                        messages=[
-                            {"role": "system", "content": system_content},
-                            {"role": "user", "content": "\n".join([f"({idx}): {_}" for idx, _ in enumerate(message_list[-50:])])},
-                        ],
-                        stream=False
-                    )
-                    reply_content = response.choices[0].message.content
-                    print(reply_content)
-                    url = f"http://{bot_ip}:{http_service_port}/send_group_msg"
-                    payload = {
-                        "group_id": group_id,
-                        "message": [
-                            {
-                                "type": "text",
-                                "data": {
-                                    "text": reply_content
+            if group_id in chat_groups:
+                no_space_message = message.replace(" ", "")
+                if no_space_message == "Whale早安":
+                    plugin.hello.morning(user_id, group_id) # 调用插件
+                else:
+                    message_list.append(message)    # 存储消息
+                    print(message_list)
+                    # 1% 概率触发消息回复
+                    k = randint(0,100-1)
+                    print(k, len(message_list))
+                    if k == 0 and len(message_list) >= 50:
+                        response = client.chat.completions.create(
+                            model="deepseek-chat",
+                            messages=[
+                                {"role": "system", "content": system_content},
+                                {"role": "user", "content": "\n".join([f"({idx}): {_}" for idx, _ in enumerate(message_list[-50:])])},
+                            ],
+                            stream=False
+                        )
+                        reply_content = response.choices[0].message.content
+                        print(reply_content)
+                        url = f"http://{bot_ip}:{http_service_port}/send_group_msg"
+                        payload = {
+                            "group_id": group_id,
+                            "message": [
+                                {
+                                    "type": "text",
+                                    "data": {
+                                        "text": reply_content
+                                    }
                                 }
-                            }
-                        ]
-                    }
-                    requests.post(url=url, json=payload)
+                            ]
+                        }
+                        requests.post(url=url, json=payload)
         elif message_type == "private":
             user_id = data.get("user_id")
             message = data.get("message")
