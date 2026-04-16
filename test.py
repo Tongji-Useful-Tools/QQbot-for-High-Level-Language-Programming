@@ -4,6 +4,15 @@ import json
 from openai import OpenAI
 import os
 from random import *
+import configparser
+import json
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+ask_groups = json.loads(config.get('group-zone', 'ask'))
+answer_groups = json.loads(config.get('group-zone', 'answer'))
+total_groups = json.loads(config.get('group-zone', 'total'))
 
 api_key = os.environ.get('DEEPSEEK_API_KEY')
 
@@ -37,6 +46,34 @@ def post_date():
         if message_type == "group":
             message = data.get("message")
             group_id = data.get("group_id")
+            if group_id in ask_groups:
+                no_space_message = message.replace(" ", "")
+                if "#Q#" in no_space_message:
+                    question = no_space_message.split("#Q#")[1]
+                    print(question)
+                    response = client.chat.completions.create(
+                        model="deepseek-chat",
+                        messages=[
+                            {"role": "system", "content": system_content},
+                            {"role": "user", "content": question},
+                        ],
+                        stream=False
+                    )
+                    reply_content = response.choices[0].message.content
+                    print(reply_content)
+                    url = f"http://{bot_ip}:{http_service_port}/send_group_msg"
+                    payload = {
+                        "group_id": group_id,
+                        "message": [
+                            {
+                                "type": "text",
+                                "data": {
+                                    "text": reply_content
+                                }
+                            }
+                        ]
+                    }
+                    requests.post(url=url, json=payload)
             if group_id == 942829871:
                 message_list.append(message)    # 存储消息
                 print(message_list)
