@@ -7,6 +7,8 @@ from random import *
 import configparser
 import json
 import time
+import sqlite3
+from tools import get_raw_message
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -64,3 +66,48 @@ def morning(user_id, group_id):
         ]
     }
     requests.post(url=url, json=payload)
+
+
+def rand_reply(message_id, message, user_id, group_id, timestamp):
+    conn = sqlite3.connect('llbot.db')
+    cursor = conn.cursor()
+    # 格式化 timestamp
+    formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
+    # 存消息 
+    cursor.execute('''
+        INSERT INTO messages (message_id, group_id, user_id, timestamp, message) VALUES (?, ?, ?, ?, ?)
+    ''', (message_id, group_id, user_id, formatted_time, json.dumps(message)))
+    conn.commit()
+    # 获取该群最近50条消息
+    cursor.execute('''
+        SELECT message FROM messages WHERE group_id = ? ORDER BY timestamp DESC LIMIT 50
+    ''', (group_id,))
+    message_list = [json.loads(row[0]) for row in cursor.fetchall()]
+    conn.commit()
+    conn.close()
+    # 1% 概率触发消息回复
+    k = randint(0,100-1)
+    if k == 0 and len(message_list) >= 50:
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": "\n".join([f"({idx}): {get_raw_message(_)}" for idx, _ in enumerate(message_list[-50:])])},
+            ],
+            stream=False
+        )
+        reply_content = response.choices[0].message.content
+        print(reply_content)
+        url = f"http://{bot_ip}:{http_service_port}/send_group_msg"
+        payload = {
+            "group_id": group_id,
+            "message": [
+                {
+                    "type": "text",
+                    "data": {
+                        "text": reply_content
+                    }
+                }
+            ]
+        }
+        requests.post(url=url, json=payload)
