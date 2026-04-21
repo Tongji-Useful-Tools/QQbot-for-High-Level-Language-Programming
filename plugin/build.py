@@ -18,11 +18,11 @@ ask_groups = json.loads(config.get('group-zone', 'ask'))
 answer_groups = json.loads(config.get('group-zone', 'answer'))
 total_groups = json.loads(config.get('group-zone', 'total'))
 
-bot_ip = config.get('bot', 'ip')
-global_ip = config.get('bot', 'global_ip')
+bot_ip = config.get('web', 'bot_ip')
+global_ip = config.get('web', 'global_ip')
 
-http_service_port = config.get('bot', 'http_service_port')
-http_website_port = config.get('bot', 'http_website_port')
+http_service_port = config.get('web', 'http_service_port')
+http_website_port = config.get('web', 'http_website_port')
 
 
 def get_group_name(group_id):
@@ -56,7 +56,7 @@ def get_user_name(group_id, user_id):
 # 将 question 转换为 markdown 格式（字符串）
 def markdown_question(question_tuple):
     question_id, question_type, question_title, is_open, is_typical, is_unmeaningful, timestamp, group_id, user_id = question_tuple
-    markdown = f"## Q{question_id}：{question_title}\n\n"
+    markdown = f"## Q{question_id}：{question_title} {{#q{question_id}}}\n\n"
     markdown += f"*来自群：{get_group_name(group_id)}  用户：{get_user_name(group_id, user_id)}  提问时间：{timestamp} 问题类别：{question_type}*\n\n"
     # 获取问题状态
     if is_open:

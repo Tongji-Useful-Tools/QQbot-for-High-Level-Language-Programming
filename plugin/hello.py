@@ -17,8 +17,8 @@ ask_groups = json.loads(config.get('group-zone', 'ask'))
 answer_groups = json.loads(config.get('group-zone', 'answer'))
 total_groups = json.loads(config.get('group-zone', 'total'))
 
-bot_ip = config.get('bot', 'ip')
-http_service_port = config.get('bot', 'http_service_port')
+bot_ip = config.get('web', 'bot_ip')
+http_service_port = config.get('web', 'http_service_port')
 
 api_key = os.environ.get('DEEPSEEK_API_KEY')
 
@@ -68,17 +68,21 @@ def morning(user_id, group_id):
     requests.post(url=url, json=payload)
 
 
-def rand_reply(message_id, message, user_id, group_id, timestamp):
+def store_message(message_id, message, group_id, user_id, timestamp):
     conn = sqlite3.connect('llbot.db')
     cursor = conn.cursor()
-    # 格式化 timestamp
     formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp))
-    # 存消息 
     cursor.execute('''
         INSERT INTO messages (message_id, group_id, user_id, timestamp, message) VALUES (?, ?, ?, ?, ?)
     ''', (message_id, group_id, user_id, formatted_time, json.dumps(message)))
     conn.commit()
+    conn.close()
+
+
+def rand_reply(message_id, message, user_id, group_id, timestamp):
     # 获取该群最近50条消息
+    conn = sqlite3.connect('llbot.db')
+    cursor = conn.cursor()
     cursor.execute('''
         SELECT message FROM messages WHERE group_id = ? ORDER BY timestamp DESC LIMIT 50
     ''', (group_id,))

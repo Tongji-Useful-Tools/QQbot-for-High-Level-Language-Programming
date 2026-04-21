@@ -8,8 +8,11 @@ import configparser
 import json
 import plugin.hello
 import plugin.question
-from tools import get_raw_message
+from tools import get_raw_message, get_text_message
 import re
+import schedule
+import time
+import threading
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -18,6 +21,7 @@ ask_groups = json.loads(config.get('group-zone', 'ask'))
 answer_groups = json.loads(config.get('group-zone', 'answer'))
 total_groups = json.loads(config.get('group-zone', 'total'))
 chat_groups = json.loads(config.get('group-zone', 'chat'))
+bot_user_id = json.loads(config.get('bot', 'bot_user_id'))
 
 api_key = os.environ.get('DEEPSEEK_API_KEY')
 
@@ -50,33 +54,47 @@ def post_date():
         if message_type == "group":
             message = data.get("message")
             message_id = data.get("message_id")
-            raw_message = get_raw_message(message)
+            text_message = get_text_message(message)
             # print(message, type(message))
             group_id = data.get("group_id")
             user_id = data.get("user_id")
             timestamp = data.get("time")
-            no_space_message = raw_message.replace(" ", "").upper()
+            # 任何消息都存到数据库中
+            plugin.hello.store_message(message_id, message, group_id, user_id, timestamp)   # 调用插件
+
             if group_id in ask_groups:
-                if "#Q#" in no_space_message:
-                    plugin.question.add_question(message_id, message, group_id, user_id, timestamp)   # 调用插件
-                else:
-                    matchObj = re.match(r"(Q\d+).*", no_space_message)
-                    if matchObj:
-                        question_id = int(matchObj.group(1)[1:])  # 提取问题编号
-                        plugin.question.add_question_note(message_id, question_id, message, group_id, user_id, timestamp)   # 调用插件
+                raw_message = re.sub(r"#\s*[Qq]\s*#", "", text_message)
+                matchObj = re.match(r"(#\s*\d+).*", text_message)
+                if raw_message != text_message and user_id not in bot_user_id:
+                    plugin.question.add_question(message_id, message, group_id, user_id, timestamp)   # 调用插件（内含 notice_about_ask）
+                elif matchObj and user_id not in bot_user_id:
+                    question_id = int(matchObj.group(1)[1:])  # 提取问题编号
+                    plugin.question.add_question_note(message_id, question_id, message, group_id, user_id, timestamp)   # 调用插件（内含 notice_about_ask）
+                elif message[0]['type'] == 'reply':
+                    question_id = plugin.question.get_message_question_id(message[0]['data']['id'])
+                    if question_id:
+                        plugin.question.add_question_note(message_id, question_id, message, group_id, user_id, timestamp)   # 调用插件（内含 notice_about_ask）
 
             if group_id in answer_groups:
-                if raw_message.lower().strip().startswith("open q"):
-                    plugin.question.move_to_open(question_id=int(raw_message.strip()[6:]), group_id=group_id) # 调用插件
-                elif raw_message.lower().strip().startswith("close q"):
-                    plugin.question.move_to_close(question_id=int(raw_message.strip()[7:]), group_id=group_id) # 调用插件
-                elif raw_message.lower().strip().startswith("typical q"):
-                    plugin.question.move_to_typical(question_id=int(raw_message.strip()[9:]), group_id=group_id) # 调用插件
-                elif raw_message.lower().strip().startswith("unmeaningful q"):
-                    plugin.question.move_to_unmeaningful(question_id=int(raw_message.strip()[14:]), group_id=group_id) # 调用插件
+                matchObj = re.match(r"(#\s*\d+).*", text_message)
+                if text_message.strip().startswith("open #"):
+                    plugin.question.move_to_open(question_id=int(text_message[6:]), group_id=group_id) # 调用插件
+                elif text_message.strip().startswith("close #"):
+                    plugin.question.move_to_close(question_id=int(text_message[7:]), group_id=group_id) # 调用插件
+                elif text_message.strip().startswith("typical #"):
+                    plugin.question.move_to_typical(question_id=int(text_message[9:]), group_id=group_id) # 调用插件
+                elif text_message.strip().startswith("unmeaningful #"):
+                    plugin.question.move_to_unmeaningful(question_id=int(text_message[14:]), group_id=group_id) # 调用插件
+                elif matchObj and user_id not in bot_user_id:
+                    question_id = int(matchObj.group(1)[1:])  # 提取问题编号
+                    plugin.question.add_question_note(message_id, question_id, message, group_id, user_id, timestamp)   # 调用插件
+                elif message[0]['type'] == 'reply':
+                    question_id = plugin.question.get_message_question_id(message[0]['data']['id'])
+                    if question_id:
+                        plugin.question.add_question_note(message_id, question_id, message, group_id, user_id, timestamp)   # 调用插件（内含 notice_about_ask）
 
             if group_id in chat_groups:
-                if no_space_message == "Whale早安":
+                if text_message == "Whale早安":
                     plugin.hello.morning(user_id, group_id) # 调用插件
                 else:
                     # 存储消息到数据库
@@ -95,8 +113,24 @@ def post_date():
     return 'OK'
 
 
+# 定时任务调度器
+def run_scheduler():
+    schedule.every(20).minutes.do(plugin.question.check_open_questions)  # 每分钟
+    # schedule.every(10).seconds.do(your_task)  # 每10秒
+    # schedule.every().hour.do(your_task)  # 每小时
+    
+    while True:
+        schedule.run_pending()
+        time.sleep(200)
+
+
 if __name__ == "__main__":
     bot_ip = "127.0.0.1"  # 此处对应LLOneBot所在的电脑的ip地址（如果是本机那就是127.0.0.1）
     http_service_port = 3000  # 此处对应“HTTP服务监听端口”
     http_event_post_port = 3001  # 此处对应“HTTP事件上报地址中的端口”
+
+    # 启动定时任务线程
+    scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
+    scheduler_thread.start()
+
     app.run("127.0.0.1", http_event_post_port, debug=True)
