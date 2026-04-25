@@ -1,5 +1,12 @@
 # node 插件
 /website/node_modules/
+/website/pics/
+/website/docs/document.md
+/website/docs/open.md
+/website/docs/programming.md
+/website/docs/technology.md
+/website/docs/typical.md
+/website/docs/unmeaningful.md
 /__pycache__/
 /plugin/__pycache__/
 *.pyc

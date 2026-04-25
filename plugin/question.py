@@ -351,7 +351,7 @@ def move_to_open(question_id, group_id):
     # 计算时间字符串
     formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     cursor.execute('''
-        UPDATE questions SET is_open = 1 AND timestamp = ? WHERE question_id = ?
+        UPDATE questions SET is_open = 1, timestamp = ? WHERE question_id = ?
     ''', (formatted_time, question_id,))
     conn.commit()
     # 获取问题类型
@@ -384,7 +384,7 @@ def move_to_close(question_id, group_id):
     cursor = conn.cursor()
     formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     cursor.execute('''
-        UPDATE questions SET is_open = 0 AND timestamp = ? WHERE question_id = ?
+        UPDATE questions SET is_open = 0, timestamp = ? WHERE question_id = ?
     ''', (formatted_time, question_id,))
     conn.commit()
     # 获取问题类型
@@ -417,7 +417,7 @@ def move_to_typical(question_id, group_id):
     cursor = conn.cursor()
     formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     cursor.execute('''
-        UPDATE questions SET is_typical = 1 AND timestamp = ? WHERE question_id = ?
+        UPDATE questions SET is_typical = 1, timestamp = ? WHERE question_id = ?
     ''', (formatted_time, question_id,))
     conn.commit()
     # 获取问题类型
@@ -450,7 +450,7 @@ def move_to_unmeaningful(question_id, group_id):
     cursor = conn.cursor()
     formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     cursor.execute('''
-        UPDATE questions SET is_unmeaningful = 1 AND timestamp = ? WHERE question_id = ?
+        UPDATE questions SET is_unmeaningful = 1, timestamp = ? WHERE question_id = ?
     ''', (formatted_time, question_id,))
     conn.commit()
     # 获取问题类型
