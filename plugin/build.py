@@ -89,6 +89,7 @@ def markdown_question(question_tuple):
             markdown += ":::\n\n---\n\n"
     conn.commit()
     conn.close()
+    markdown.replace("<", "&lt;")   # 解决 < 在 markdown 中的特殊含义问题
     return markdown
 
 

@@ -43,3 +43,33 @@ while (condition)
 
 ---
 
+## Q34：cfg乱码配置咨询 {#q34}
+
+*来自群：高程[05-丁]  用户：2552084-经管-李光楷  提问时间：2026-05-06 09:44:23 问题类别：programming*
+
+::: info 问题状态：已关闭
+:::
+
+::: details
+这是一个典型问题，因此在你提问之前，请确保浏览过这些问题.
+:::
+
+**问题描述**：
+
+请问.cfg文件双击打开以后出现如图所示的乱码是什么情况，以及图中三项信息应该如何配置，pdf文件规则没有读懂
+
+![图片](/root/git_project/Tongji-Useful-Tools/QQbot-for-High-Level-Language-Programming/website/pics/2D6F76668F24C500E0BA258E36D9BBED.png)
+
+**追问追答**：
+
+::: tip ***追答于：2026-05-05 14:20:05***
+1.如图，选择 gbk
+
+![图片](/root/git_project/Tongji-Useful-Tools/QQbot-for-High-Level-Language-Programming/website/pics/7048679E8921A8AF91D5963AF65ABF69.png) 
+
+2.VSCode 整不明白就别用了，右键记事本打开吧
+
+:::
+
+---
+

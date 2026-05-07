@@ -188,7 +188,7 @@ def add_question(message_id, content, group_id, user_id, timestamp):
     """
     ocr_message = get_raw_message(content, ocr=True)
     response = client.chat.completions.create(
-        model="deepseek-chat",
+        model="deepseek-v4-pro",
         messages=[
             {"role": "system", "content": system_content},
             {"role": "user", "content": ocr_message},
@@ -207,7 +207,7 @@ def add_question(message_id, content, group_id, user_id, timestamp):
     你的回复内容只能是标题文本，不要添加任何附加内容包括标点符号。
     """
     response = client.chat.completions.create(
-        model="deepseek-chat",
+        model="deepseek-v4-pro",
         messages=[
             {"role": "system", "content": system_content},
             {"role": "user", "content": ocr_message},

@@ -62,12 +62,12 @@ def post_date():
             # 任何消息都存到数据库中
             plugin.hello.store_message(message_id, message, group_id, user_id, timestamp)   # 调用插件
 
-            if group_id in ask_groups:
+            if group_id in ask_groups and user_id not in bot_user_id:
                 raw_message = re.sub(r"#\s*[Qq]\s*#", "", text_message)
                 matchObj = re.match(r"(#\s*\d+).*", text_message)
-                if raw_message != text_message and user_id not in bot_user_id:
+                if raw_message != text_message:
                     plugin.question.add_question(message_id, message, group_id, user_id, timestamp)   # 调用插件（内含 notice_about_ask）
-                elif matchObj and user_id not in bot_user_id:
+                elif matchObj:
                     question_id = int(matchObj.group(1)[1:])  # 提取问题编号
                     plugin.question.add_question_note(message_id, question_id, message, group_id, user_id, timestamp)   # 调用插件（内含 notice_about_ask）
                 elif message[0]['type'] == 'reply':
@@ -75,7 +75,7 @@ def post_date():
                     if question_id:
                         plugin.question.add_question_note(message_id, question_id, message, group_id, user_id, timestamp)   # 调用插件（内含 notice_about_ask）
 
-            if group_id in answer_groups:
+            if group_id in answer_groups and user_id not in bot_user_id:
                 matchObj = re.match(r"(#\s*\d+).*", text_message)
                 if text_message.strip().startswith("open #"):
                     plugin.question.move_to_open(question_id=int(text_message[6:]), group_id=group_id) # 调用插件
@@ -93,7 +93,7 @@ def post_date():
                     if question_id:
                         plugin.question.add_question_note(message_id, question_id, message, group_id, user_id, timestamp)   # 调用插件（内含 notice_about_ask）
 
-            if group_id in chat_groups:
+            if group_id in chat_groups and user_id not in bot_user_id:
                 if text_message == "Whale早安":
                     plugin.hello.morning(user_id, group_id) # 调用插件
                 else:
