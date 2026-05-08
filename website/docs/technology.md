@@ -105,13 +105,13 @@ while (condition)
 
 **问题描述**：
 
-cin.ignore(numeric_limits&lt;streamsize>::max(), '\n');
+cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
 **追问追答**：
 
 ***追问于：2026-04-29 18:15:29***
 
-cin.ignore(numeric_limits&lt;streamsize>::max(), '\n');
+cin.ignore(numeric_limits<streamsize>::max(), '\n');
 非法吗？
 
 ::: tip ***追答于：2026-04-29 18:39:21***

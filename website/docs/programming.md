@@ -2,7 +2,7 @@
 
 ## Q1：光标移动函数合并 {#q1}
 
-*来自群：高程[05-丁]  用户：2553058-微应物-朱祎  提问时间：2026-04-19 13:39:34 问题类别：programming*
+*来自群：高程[05-丁]  用户：2553058-微应物-朱祎  提问时间：2026-05-08 21:18:30 问题类别：programming*
 
 ::: info 问题状态：已关闭
 :::
@@ -557,6 +557,34 @@ C语言作业中是否允许使用getchar()清除缓冲区？
 
 ::: tip ***追答于：2026-05-07 21:57:27***
 能，鼓励使用常变量
+
+:::
+
+---
+
+## Q44：pragma once 编译报错 {#q44}
+
+*来自群：提问区-1群  用户：2550292-汽车-王嘉伟  提问时间：2026-05-08 23:27:46 问题类别：programming*
+
+::: info 问题状态：已关闭
+:::
+
+**问题描述**：
+
+5-b7.h,请问我在VS能成功编译，但是在gcc中头文件出现了以下报错，使得main文件无法正常编译，不能调用-cct中的函数，
+
+
+![图片](/root/git_project/Tongji-Useful-Tools/QQbot-for-High-Level-Language-Programming/website/pics/EFB96C3013F669164A222843CC773BB7.png)
+
+**追问追答**：
+
+::: tip ***追答于：2026-05-08 21:59:48***
+5-b7 未要求 gcc 通过
+
+
+![图片](/root/git_project/Tongji-Useful-Tools/QQbot-for-High-Level-Language-Programming/website/pics/210240F8448DC41F3CFE4C08E00ECAF9.png) 
+
+问题本身：VS 以“项目”为单位编译；小熊猫默认以单文件为单位编译，在 5-b7.h 页面上编译，就会让 gcc 编译 5-b7.h 这个文件本身；关于 RedPanda 的多源文件编译，减负原因在先前的作业里删除了，有兴趣可自行尝试
 
 :::
 

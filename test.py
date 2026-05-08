@@ -133,4 +133,4 @@ if __name__ == "__main__":
     scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
     scheduler_thread.start()
 
-    app.run("127.0.0.1", http_event_post_port, debug=True)
+    app.run("127.0.0.1", http_event_post_port, debug=False)
