@@ -341,6 +341,11 @@ def add_question_note(message_id, question_id, content, group_id, user_id, times
         }
         requests.post(url=url, json=payload)
 
+    if not is_question:
+        # 若问题为 open，自动置为 close
+        for answer_group_id in answer_groups:
+            move_to_close(question_id, answer_group_id, auto_set=True)
+
     if not is_question and group_id in answer_groups:
         notice_about_answer(question_id, qtype, qtitle, content, from_group_id)
 
@@ -379,7 +384,7 @@ def move_to_open(question_id, group_id):
         requests.post(url=url, json=payload)
 
 
-def move_to_close(question_id, group_id):
+def move_to_close(question_id, group_id, auto_set = False):
     conn = sqlite3.connect('llbot.db')
     cursor = conn.cursor()
     formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
@@ -404,7 +409,7 @@ def move_to_close(question_id, group_id):
                 {
                     "type": "text",
                     "data": {
-                        "text": f"已成功将问题 #{question_id} 设置为关闭状态."
+                        "text": f"收到回答，已自动将问题 #{question_id} 设置为关闭状态." if auto_set else f"已成功将问题 #{question_id} 设置为关闭状态."
                     }
                 }
             ]

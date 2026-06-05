@@ -120,3 +120,29 @@ def rand_reply(message_id, message, user_id, group_id, timestamp):
             ]
         }
         requests.post(url=url, json=payload)
+
+
+def show_version(group_id):
+    version_info = ""
+    version_info += "[version]\nbot-Jingyu v1.3\n"
+    version_info += "[help_menu]\nhelp??     : 显示此帮助菜单\n"
+    version_info += "#Q#/#q#    : 触发提问指令\n"
+    version_info += "#{d}       : 回答问题编号为 d 的问题，也可直接使用 QQ 引用，此时无需加上 #{d}\n"
+    version_info += "open #{d}  : 将问题 d 设置为开放状态\n"
+    version_info += "close #{d} : 将问题 d 设置为关闭状态\n"
+    version_info += "tpcal #{d} : 将问题 d 设置为典型问题\n"
+    version_info += "umean #{d} : 将问题 d 设置为无意义问题\n"
+
+    url = f"http://{bot_ip}:{http_service_port}/send_group_msg"
+    payload = {
+        "group_id": group_id,
+        "message": [
+            {
+                "type": "text",
+                "data": {
+                    "text": version_info
+                }
+            }
+        ]
+    }
+    requests.post(url=url, json=payload)

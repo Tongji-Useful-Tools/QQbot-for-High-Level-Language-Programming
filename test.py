@@ -77,13 +77,15 @@ def post_date():
 
             if group_id in answer_groups and user_id not in bot_user_id:
                 matchObj = re.match(r"(#\s*\d+).*", text_message)
+                if text_message.strip() == "help??":
+                    plugin.hello.show_version(group_id=group_id) # 获取帮助/版本号信息
                 if text_message.strip().startswith("open #"):
                     plugin.question.move_to_open(question_id=int(text_message[6:]), group_id=group_id) # 调用插件
                 elif text_message.strip().startswith("close #"):
                     plugin.question.move_to_close(question_id=int(text_message[7:]), group_id=group_id) # 调用插件
-                elif text_message.strip().startswith("typical #"):
+                elif text_message.strip().startswith("tpcal #"):
                     plugin.question.move_to_typical(question_id=int(text_message[9:]), group_id=group_id) # 调用插件
-                elif text_message.strip().startswith("unmeaningful #"):
+                elif text_message.strip().startswith("umean #"):
                     plugin.question.move_to_unmeaningful(question_id=int(text_message[14:]), group_id=group_id) # 调用插件
                 elif matchObj and user_id not in bot_user_id:
                     question_id = int(matchObj.group(1)[1:])  # 提取问题编号
